@@ -1,20 +1,32 @@
-import { Controller, Delete, Get, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
+import { SongsService } from './songs.service';
+import { NewSongDto } from 'src/DTOs/songs/songs.dto';
 
 @Controller('songs')
 export class SongsController {
+  constructor(private songsService: SongsService) {}
+
   @Get()
   getSongs() {
     return [];
   }
 
   @Get(':id')
-  getSong() {
-    return {};
+  getSong(@Param('id') id: string) {
+    return { id };
   }
 
   @Post()
-  addSong() {
-    return {};
+  addSong(@Body() newSong: NewSongDto) {
+    return { ...newSong };
   }
 
   @Post('all')
@@ -23,12 +35,12 @@ export class SongsController {
   }
 
   @Put(':id')
-  updateSong() {
-    return {};
+  updateSong(@Param('id') id: string) {
+    return { id };
   }
 
   @Delete(':id')
-  deleteSong() {
-    return {};
+  deleteSong(@Param('id') id: string) {
+    return { id };
   }
 }
