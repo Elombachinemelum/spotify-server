@@ -3,7 +3,10 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
+  ParseIntPipe,
   Post,
   Put,
 } from '@nestjs/common';
@@ -20,7 +23,18 @@ export class SongsController {
   }
 
   @Get(':id')
-  getSong(@Param('id') id: string) {
+  getSong(
+    @Param(
+      'id',
+      new ParseIntPipe({
+        // errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE, //Not needed if we provide an error object via exceptionFactory
+        exceptionFactory(error) {
+          return new HttpException(error, HttpStatus.NOT_ACCEPTABLE);
+        },
+      }),
+    )
+    id: number,
+  ) {
     return { id };
   }
 

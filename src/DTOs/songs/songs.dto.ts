@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsDateString,
   IsMilitaryTime,
   IsNotEmpty,
@@ -10,9 +11,10 @@ export class NewSongDto {
   @IsNotEmpty({ message: 'Title is required' })
   readonly title: string;
 
-  @IsString({ message: 'Artist must be a string' })
-  @IsNotEmpty({ message: 'Artist is required' })
-  readonly artist: string;
+  @IsArray({ message: 'Artists must be an array' })
+  @IsString({ message: 'Each artist must be a string', each: true })
+  @IsNotEmpty({ message: 'Artists field is required' })
+  readonly artists: string[];
 
   @IsDateString({}, { message: 'Release date must be a date string' })
   readonly releaseDate: Date;
