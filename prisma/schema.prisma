@@ -40,7 +40,7 @@ model PlayList {
   updatedAt   DateTime @updatedAt
   songs       Song[]
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Artist {
