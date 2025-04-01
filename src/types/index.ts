@@ -9,7 +9,7 @@ export interface FullUser {
     updatedAt: Date;
     description: string | null;
     songs: {
-      name: string;
+      title: string;
       id: string;
       createdAt: Date;
       artists: {

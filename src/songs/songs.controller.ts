@@ -6,7 +6,6 @@ import {
   HttpException,
   HttpStatus,
   Param,
-  ParseIntPipe,
   Post,
   Put,
 } from '@nestjs/common';
@@ -37,7 +36,11 @@ export class SongsController {
 
   @Post()
   async addSong(@Body() newSong: NewSongDto) {
-    let newSongCreated: Prisma.SongCreateInput;
+    let newSongCreated: {
+      newSong: Prisma.SongCreateInput;
+      message: string[];
+    };
+
     try {
       newSongCreated = await this.songsService.createSong(newSong);
     } catch (err) {
@@ -48,7 +51,12 @@ export class SongsController {
       );
     }
 
-    return newSongCreated;
+    return {
+      createdSong: newSongCreated.newSong,
+      message: newSongCreated.message.length
+        ? newSongCreated.message
+        : undefined,
+    };
   }
 
   @Get()
@@ -58,7 +66,7 @@ export class SongsController {
 
   @Get(':id')
   getSong(@Param('id') id: string) {
-    return [];
+    return [id];
   }
 
   @Post('all')

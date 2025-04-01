@@ -8,5 +8,6 @@ import { UserModule } from 'src/user/user.module';
   controllers: [PlaylistController],
   providers: [PlaylistService],
   imports: [PrismaModule, UserModule],
+  exports: [PlaylistService],
 })
 export class PlaylistModule {}

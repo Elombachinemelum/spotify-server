@@ -37,7 +37,7 @@ export class UserService {
             songs: {
               select: {
                 id: true,
-                name: true,
+                title: true,
                 createdAt: true,
                 artists: { select: { name: true } },
               },

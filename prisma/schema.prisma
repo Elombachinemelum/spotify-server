@@ -30,7 +30,7 @@ model Song {
   updatedAt   DateTime   @updatedAt
   lyrics      String     @default("")
   releaseDate DateTime
-  duration    DateTime
+  duration    String
   artists     Artist[]
   playLists   PlayList[]
 }

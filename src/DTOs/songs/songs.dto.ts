@@ -18,11 +18,12 @@ export class NewSongDto {
   // @IsNotEmpty({ message: 'Artists field is required' })
   readonly artists: string[];
 
-  @IsDateString({}, { message: 'Release date must be a date string' })
+  @IsDateString({}, { message: 'Release date must be a date ISO string' })
+  @IsOptional()
   readonly releaseDate: Date;
 
   @IsMilitaryTime({ message: 'Duration must be a military time. "MM:SS"' })
-  readonly duration: Date;
+  readonly duration: string;
 
   @IsOptional()
   @IsString()
