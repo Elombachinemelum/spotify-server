@@ -71,6 +71,14 @@ export class SongsService {
     return { newSong, message };
   }
 
+  async getSongs(): Promise<Prisma.SongCreateInput[]> {
+    return await this.prismaService.song.findMany();
+  }
+
+  async getSongById(id: string): Promise<Prisma.SongCreateInput | null> {
+    return this.prismaService.song.findUnique({ where: { id } });
+  }
+
   async verifyExistingArtist(artistList: string[] = []) {
     const data: {
       valid: string[];

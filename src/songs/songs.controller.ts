@@ -13,6 +13,7 @@ import { SongsService } from './songs.service';
 import { NewSongDto } from 'src/DTOs/songs/songs.dto';
 import { errorMessages } from 'src/utils/constants';
 import { Prisma } from '@prisma/client';
+import { constructNotFoundMessage } from 'src/utils/functions';
 
 @Controller('songs')
 export class SongsController {
@@ -60,13 +61,40 @@ export class SongsController {
   }
 
   @Get()
-  getSongs() {
-    return [];
+  async getSongs(): Promise<Prisma.SongCreateInput[]> {
+    let songs: Prisma.SongCreateInput[];
+    try {
+      songs = await this.songsService.getSongs();
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        errorMessages.SOMETHING_WENT_WRONG,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return songs;
   }
 
   @Get(':id')
-  getSong(@Param('id') id: string) {
-    return [id];
+  async getSong(@Param('id') id: string) {
+    let song: Prisma.SongCreateInput | null;
+    try {
+      song = await this.songsService.getSongById(id);
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        errorMessages.SOMETHING_WENT_WRONG,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    if (!song)
+      throw new HttpException(
+        constructNotFoundMessage(`Song with id ${id}`),
+        HttpStatus.NOT_FOUND,
+      );
+
+    return song;
   }
 
   @Post('all')
