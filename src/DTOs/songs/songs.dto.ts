@@ -1,3 +1,4 @@
+import { PartialType } from '@nestjs/mapped-types';
 import {
   IsArray,
   IsDateString,
@@ -32,5 +33,17 @@ export class NewSongDto {
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  readonly playLists: string[];
+  readonly playlists: string[];
+}
+
+export class updateSongDto extends PartialType(NewSongDto) {
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  removeArtists?: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  removePlaylists?: string[];
 }

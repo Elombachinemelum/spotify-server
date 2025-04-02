@@ -16,4 +16,9 @@ export class ArtistDto {
   biography?: string;
 }
 
-export class UpdateArtistDto extends PartialType(ArtistDto) {}
+export class UpdateArtistDto extends PartialType(ArtistDto) {
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  removeSongs?: string[];
+}

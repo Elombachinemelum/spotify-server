@@ -32,7 +32,7 @@ model Song {
   releaseDate DateTime
   duration    String
   artists     Artist[]
-  playLists   PlayList[]
+  playlists   PlayList[]
 }
 
 model PlayList {
@@ -52,5 +52,5 @@ model Artist {
   biography String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Songs     Song[]
+  songs     Song[]
 }

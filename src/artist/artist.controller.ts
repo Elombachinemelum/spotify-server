@@ -21,10 +21,13 @@ export class ArtistController {
   @Post()
   async createArtist(
     @Body() newArtist: ArtistDto,
-  ): Promise<Prisma.ArtistCreateInput> {
+  ): Promise<{ artist: Prisma.ArtistCreateInput; message: string[] }> {
     let artist: Prisma.ArtistCreateInput;
+    let message: string[] = [];
     try {
-      artist = await this.artistService.createArtist(newArtist);
+      const artistData = await this.artistService.createArtist(newArtist);
+      artist = artistData.newArtist;
+      message = artistData.message;
     } catch (err) {
       console.log(err);
       throw new HttpException(
@@ -32,7 +35,7 @@ export class ArtistController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    return artist;
+    return { artist, message };
   }
 
   @Get()
@@ -80,7 +83,46 @@ export class ArtistController {
   }
 
   @Patch(':id')
-  async updateArtist(@Body() artist: UpdateArtistDto, @Param('id') id: string) {
-    return await this.artistService.updateArtist(id, artist);
+  async updateArtist(
+    @Body() artist: UpdateArtistDto,
+    @Param('id') id: string,
+  ): Promise<{
+    artist: Prisma.ArtistCreateInput;
+    message: string[];
+  }> {
+    let updatedArtist: Prisma.ArtistCreateInput;
+    let existingArtist: Prisma.ArtistCreateInput | null;
+    let message: string[] = [];
+
+    try {
+      existingArtist = (await this.artistService.getArtists(
+        id,
+      )) as Prisma.ArtistCreateInput | null;
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        errorMessages.SOMETHING_WENT_WRONG,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    if (!existingArtist)
+      throw new HttpException(
+        constructNotFoundMessage(`Artist with id ${id}`),
+        HttpStatus.NOT_FOUND,
+      );
+
+    try {
+      const artistData = await this.artistService.updateArtist(id, artist);
+      updatedArtist = artistData.artist;
+      message = artistData.message;
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        errorMessages.SOMETHING_WENT_WRONG,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return { artist: updatedArtist, message };
   }
 }

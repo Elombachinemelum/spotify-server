@@ -1,15 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { NewSongDto } from 'src/DTOs/songs/songs.dto';
+import { NewSongDto, updateSongDto } from 'src/DTOs/songs/songs.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { getConnectObjects } from 'src/utils/functions';
 import { ArtistService } from 'src/artist/artist.service';
 import { PlaylistService } from 'src/playlist/playlist.service';
+import { errorMessages } from 'src/utils/constants';
 
 @Injectable()
 export class SongsService {
   constructor(
     private readonly prismaService: PrismaService,
+    @Inject(forwardRef(() => ArtistService))
     private artistService: ArtistService,
     private playlistService: PlaylistService,
   ) {}
@@ -19,12 +21,12 @@ export class SongsService {
     const message: string[] = [];
 
     if (
-      (song.artists || song.playLists) &&
-      (song?.artists?.length > 0 || song?.playLists?.length > 0)
+      (song.artists || song.playlists) &&
+      (song?.artists?.length > 0 || song?.playlists?.length > 0)
     ) {
       const [artisitVerData, plalistVerData] = await Promise.all([
         await this.verifyExistingArtist(song.artists),
-        await this.verifyExistingPlaylist(song.playLists),
+        await this.verifyExistingPlaylist(song.playlists),
       ]);
 
       newSong = await this.prismaService.song.create({
@@ -38,8 +40,8 @@ export class SongsService {
               ? getConnectObjects(artisitVerData.valid)
               : [],
           },
-          playLists: {
-            connect: song.playLists
+          playlists: {
+            connect: song.playlists
               ? getConnectObjects(plalistVerData.valid)
               : [],
           },
@@ -64,7 +66,7 @@ export class SongsService {
             ? new Date().toISOString()
             : song.releaseDate,
           artists: { connect: [] },
-          playLists: { connect: [] },
+          playlists: { connect: [] },
         },
       });
     }
@@ -129,5 +131,78 @@ export class SongsService {
       }),
     );
     return data;
+  }
+
+  async updateSong(
+    id: string,
+    data: updateSongDto,
+  ): Promise<{ song: Prisma.SongCreateInput; message: string[] }> {
+    let updatedSong: Prisma.SongCreateInput;
+    const message: string[] = [];
+    if (
+      (data.artists ||
+        data.playlists ||
+        data.removeArtists ||
+        data.removePlaylists) &&
+      (data.artists?.length ||
+        data.playlists?.length ||
+        data.removeArtists?.length ||
+        data.removePlaylists?.length)
+    ) {
+      const [
+        artisitVerData,
+        plalistVerData,
+        artistRemoveData,
+        playlistRemoveData,
+      ] = await Promise.all([
+        await this.verifyExistingArtist(data.artists),
+        await this.verifyExistingPlaylist(data.playlists),
+        await this.verifyExistingArtist(data.removeArtists),
+        await this.verifyExistingPlaylist(data.removePlaylists),
+      ]);
+      delete data.removeArtists; // we dont want to have this key in the update data
+      delete data.removePlaylists;
+      updatedSong = await this.prismaService.song.update({
+        where: { id },
+        data: {
+          ...data,
+          artists: {
+            connect: getConnectObjects(artisitVerData.valid),
+            disconnect: getConnectObjects(artistRemoveData.valid),
+          },
+          playlists: {
+            connect: getConnectObjects(plalistVerData.valid),
+            disconnect: getConnectObjects(playlistRemoveData.valid),
+          },
+        },
+      });
+      if (artisitVerData.invalid.length)
+        message.push(
+          `${errorMessages.ARTIST_NOT_ADDED_TO_SONG} ${artisitVerData.invalid.join(', ')}`,
+        );
+      if (plalistVerData.invalid.length)
+        message.push(
+          `${errorMessages.PLAYLIST_NOT_ADDED_TO_SONG} ${plalistVerData.invalid.join(', ')}`,
+        );
+      if (artistRemoveData.invalid.length)
+        message.push(
+          `${errorMessages.ARTIST_NOT_REMOVED_FROM_SONG} ${artistRemoveData.invalid.join(', ')}`,
+        );
+      if (playlistRemoveData.invalid.length)
+        message.push(
+          `${errorMessages.PLAYLIST_NOT_REMOVED_FROM_SONG} ${playlistRemoveData.invalid.join(', ')}`,
+        );
+    } else {
+      updatedSong = await this.prismaService.song.update({
+        where: { id },
+        data: {
+          ...data,
+          artists: { connect: [] },
+          playlists: { connect: [] },
+        },
+      });
+    }
+
+    return { song: updatedSong, message };
   }
 }

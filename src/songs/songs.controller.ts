@@ -6,11 +6,11 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  Patch,
   Post,
-  Put,
 } from '@nestjs/common';
 import { SongsService } from './songs.service';
-import { NewSongDto } from 'src/DTOs/songs/songs.dto';
+import { NewSongDto, updateSongDto } from 'src/DTOs/songs/songs.dto';
 import { errorMessages } from 'src/utils/constants';
 import { Prisma } from '@prisma/client';
 import { constructNotFoundMessage } from 'src/utils/functions';
@@ -102,9 +102,45 @@ export class SongsController {
     return [];
   }
 
-  @Put(':id')
-  updateSong(@Param('id') id: string) {
-    return { id };
+  @Patch(':id')
+  async updateSong(
+    @Body() song: updateSongDto,
+    @Param('id') id: string,
+  ): Promise<{
+    song: Prisma.SongCreateInput;
+    message: string[];
+  }> {
+    let existingSong: Prisma.SongCreateInput | null;
+    let updatedSongData: {
+      song: Prisma.SongCreateInput;
+      message: string[];
+    };
+    try {
+      existingSong = await this.songsService.getSongById(id);
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        errorMessages.SOMETHING_WENT_WRONG,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    if (!existingSong)
+      throw new HttpException(
+        constructNotFoundMessage(`Song with id ${id}`),
+        HttpStatus.NOT_FOUND,
+      );
+
+    try {
+      updatedSongData = await this.songsService.updateSong(id, song);
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        errorMessages.SOMETHING_WENT_WRONG,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return updatedSongData;
   }
 
   @Delete(':id')
