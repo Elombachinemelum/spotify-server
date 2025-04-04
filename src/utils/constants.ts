@@ -12,4 +12,8 @@ export const errorMessages = {
     'The following playlists could not capture this song, ensure they are valid:',
   PLAYLIST_NOT_REMOVED_FROM_SONG:
     'The song could not be reomved from the following playlists, ensure they are valid:',
+  SONG_NOT_ADDED_TO_PLAYLIST:
+    'The following songs were not added to this playlist, ensure they are valid:',
+  SONG_NOT_REMOVED_FROM_PLAYLIST:
+    'The following songs were not removed from the playlist, ensure they are valid:',
 };

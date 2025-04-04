@@ -8,7 +8,11 @@ import { PlaylistModule } from 'src/playlist/playlist.module';
 @Module({
   controllers: [SongsController],
   providers: [SongsService],
-  imports: [forwardRef(() => ArtistModule), PrismaModule, PlaylistModule],
+  imports: [
+    forwardRef(() => ArtistModule),
+    PrismaModule,
+    forwardRef(() => PlaylistModule),
+  ],
   exports: [SongsService],
 })
 export class SongsModule {}

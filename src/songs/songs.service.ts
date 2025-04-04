@@ -13,6 +13,7 @@ export class SongsService {
     private readonly prismaService: PrismaService,
     @Inject(forwardRef(() => ArtistService))
     private artistService: ArtistService,
+    @Inject(forwardRef(() => PlaylistService))
     private playlistService: PlaylistService,
   ) {}
 
