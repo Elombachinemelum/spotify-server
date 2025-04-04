@@ -60,7 +60,7 @@ export class PlaylistController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    return { playlist: newPlayList.playlist, message: newPlayList.message };
+    return newPlayList;
   }
 
   @Get()
@@ -137,9 +137,6 @@ export class PlaylistController {
       );
     }
 
-    return {
-      playlist: updatedPlaylistData.playlist,
-      message: updatedPlaylistData.message,
-    };
+    return updatedPlaylistData;
   }
 }
