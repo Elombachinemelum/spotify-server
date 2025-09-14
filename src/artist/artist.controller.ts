@@ -46,23 +46,16 @@ export class ArtistController {
     @Query('pageNumber', new DefaultValuePipe(1), ParseIntPipe)
     pageNumber: number,
     @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize: number,
-  ): Promise<
-    | Prisma.ArtistCreateInput
-    | {
-        data: Prisma.ArtistCreateInput[];
-        count: number;
-        total: number;
-      }
-    | null
-  > {
-    let artist:
-      | Prisma.ArtistCreateInput
-      | {
-          data: Prisma.ArtistCreateInput[];
-          count: number;
-          total: number;
-        }
-      | null;
+  ): Promise<{
+    data: Prisma.ArtistCreateInput[];
+    count: number;
+    total: number;
+  }> {
+    let artist: {
+      data: Prisma.ArtistCreateInput[];
+      count: number;
+      total: number;
+    };
     try {
       artist = await this.artistService.getArtists(pageNumber, pageSize);
     } catch (err) {
