@@ -1,13 +1,16 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   HttpException,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { SongsService } from './songs.service';
 import { NewSongDto, updateSongDto } from 'src/DTOs/songs/songs.dto';
@@ -61,10 +64,14 @@ export class SongsController {
   }
 
   @Get()
-  async getSongs(): Promise<Prisma.SongCreateInput[]> {
-    let songs: Prisma.SongCreateInput[];
+  async getSongs(
+    @Query('pageNumber', new DefaultValuePipe(1), ParseIntPipe)
+    pageNumber: number,
+    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize: number,
+  ): Promise<{ data: Prisma.SongCreateInput[]; total: number; count: number }> {
+    let songs: { data: Prisma.SongCreateInput[]; total: number; count: number };
     try {
-      songs = await this.songsService.getSongs();
+      songs = await this.songsService.getSongs(pageNumber, pageSize);
     } catch (err) {
       console.log(err);
       throw new HttpException(

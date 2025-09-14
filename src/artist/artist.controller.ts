@@ -1,12 +1,15 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Get,
   HttpException,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ArtistService } from './artist.service';
 import { Prisma } from '@prisma/client';
@@ -39,10 +42,29 @@ export class ArtistController {
   }
 
   @Get()
-  async getArtists() {
-    let artist: Prisma.ArtistCreateInput | Prisma.ArtistCreateInput[] | null;
+  async getArtists(
+    @Query('pageNumber', new DefaultValuePipe(1), ParseIntPipe)
+    pageNumber: number,
+    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize: number,
+  ): Promise<
+    | Prisma.ArtistCreateInput
+    | {
+        data: Prisma.ArtistCreateInput[];
+        count: number;
+        total: number;
+      }
+    | null
+  > {
+    let artist:
+      | Prisma.ArtistCreateInput
+      | {
+          data: Prisma.ArtistCreateInput[];
+          count: number;
+          total: number;
+        }
+      | null;
     try {
-      artist = await this.artistService.getArtists();
+      artist = await this.artistService.getArtists(pageNumber, pageSize);
     } catch (err) {
       console.log(err);
       throw new HttpException(
@@ -64,7 +86,7 @@ export class ArtistController {
   async getArtist(@Param('id') id: string) {
     let artist: Prisma.ArtistCreateInput | Prisma.ArtistCreateInput[] | null;
     try {
-      artist = await this.artistService.getArtists(id);
+      artist = await this.artistService.getArtistById(id);
     } catch (err) {
       console.log(err);
       throw new HttpException(
@@ -95,9 +117,7 @@ export class ArtistController {
     let message: string[] = [];
 
     try {
-      existingArtist = (await this.artistService.getArtists(
-        id,
-      )) as Prisma.ArtistCreateInput | null;
+      existingArtist = await this.artistService.getArtistById(id);
     } catch (err) {
       console.log(err);
       throw new HttpException(

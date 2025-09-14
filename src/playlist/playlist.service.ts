@@ -47,8 +47,21 @@ export class PlaylistService {
     return { playlist: newPlaylist, message };
   }
 
-  async getPlaylists(): Promise<Playlist[]> {
-    return await this.prismaService.playList.findMany();
+  async getPlaylists(
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<{ data: Playlist[]; total: number; count: number }> {
+    const skip: number = (pageNumber - 1) * pageSize;
+    const playlists = await this.prismaService.playList.findMany({
+      skip,
+      take: pageSize,
+      orderBy: { createdAt: 'desc' },
+    });
+    return {
+      data: playlists,
+      count: playlists.length,
+      total: await this.prismaService.playList.count(),
+    };
   }
 
   async getPlaylistById(id: string): Promise<Playlist | null> {

@@ -1,12 +1,15 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Get,
   HttpException,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { PlaylistService } from './playlist.service';
 import { errorMessages } from 'src/utils/constants';
@@ -63,11 +66,16 @@ export class PlaylistController {
     return newPlayList;
   }
 
+  // this is how to provide default value to query params
   @Get()
-  async getPlaylists(): Promise<Playlist[]> {
-    let playLists: Playlist[];
+  async getPlaylists(
+    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize: number,
+    @Query('pageNumber', new DefaultValuePipe(1), ParseIntPipe)
+    pageNumber: number,
+  ): Promise<{ data: Playlist[]; total: number; count: number }> {
+    let playLists: { data: Playlist[]; total: number; count: number };
     try {
-      playLists = await this.playListService.getPlaylists();
+      playLists = await this.playListService.getPlaylists(pageNumber, pageSize);
     } catch (err) {
       console.log(err);
       throw new HttpException(
@@ -75,6 +83,7 @@ export class PlaylistController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+    console.log(playLists);
     return playLists;
   }
 

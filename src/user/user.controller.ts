@@ -23,7 +23,6 @@ export class UserController {
 
   @Post()
   async createUser(@Body() newUser: CreateUserDto): Promise<SerializedUser> {
-    console.log(newUser);
     let existingUSer: Prisma.UserCreateInput | null;
     let createdUSer: Prisma.UserCreateInput;
     try {

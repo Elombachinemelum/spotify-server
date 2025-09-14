@@ -13,14 +13,32 @@ export class ArtistService {
     @Inject(forwardRef(() => SongsService)) private songsService: SongsService,
   ) {}
 
+  async getArtistById(id: string): Promise<Prisma.ArtistCreateInput | null> {
+    return await this.prismaService.artist.findUnique({
+      where: { id },
+    });
+  }
+
   async getArtists(
-    id?: string,
-  ): Promise<Prisma.ArtistCreateInput | Prisma.ArtistCreateInput[] | null> {
-    if (id)
-      return await this.prismaService.artist.findUnique({
-        where: { id },
-      });
-    return await this.prismaService.artist.findMany();
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<{
+    data: Prisma.ArtistCreateInput[];
+    count: number;
+    total: number;
+  }> {
+    const skip: number = (pageNumber - 1) * pageSize;
+    const artists = await this.prismaService.artist.findMany({
+      skip,
+      take: pageSize,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return {
+      data: artists,
+      count: artists.length,
+      total: await this.prismaService.artist.count(),
+    };
   }
 
   async createArtist(

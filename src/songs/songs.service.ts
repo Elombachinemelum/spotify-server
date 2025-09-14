@@ -74,8 +74,21 @@ export class SongsService {
     return { newSong, message };
   }
 
-  async getSongs(): Promise<Prisma.SongCreateInput[]> {
-    return await this.prismaService.song.findMany();
+  async getSongs(
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<{ data: Prisma.SongCreateInput[]; total: number; count: number }> {
+    const skip = (pageNumber - 1) * pageSize;
+    const songs = await this.prismaService.song.findMany({
+      skip,
+      take: pageSize,
+      orderBy: { createdAt: 'desc' },
+    });
+    return {
+      data: songs,
+      count: songs.length,
+      total: await this.prismaService.song.count(),
+    };
   }
 
   async getSongById(id: string): Promise<Prisma.SongCreateInput | null> {
@@ -95,8 +108,7 @@ export class SongsService {
       artistList.map(async (artistId) => {
         let artist: Prisma.ArtistCreateInput | null = null;
         try {
-          const result = await this.artistService.getArtists(artistId);
-          artist = result as Prisma.ArtistCreateInput | null;
+          artist = await this.artistService.getArtistById(artistId);
         } catch (error) {
           console.log(error);
         } finally {
