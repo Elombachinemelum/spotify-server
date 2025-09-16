@@ -1,3 +1,5 @@
+import { Prisma } from '.prisma/client/default';
+
 export interface FullUser {
   name: string;
   email: string;
@@ -27,3 +29,5 @@ export interface Playlist {
   updatedAt: Date;
   userId: string;
 }
+
+export type PartialArtist = Partial<Prisma.ArtistCreateInput>;

@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { AuthService } from 'src/auth/auth.service';
 import { ArtistDto, UpdateArtistDto } from 'src/DTOs/artist/artist.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SongsService } from 'src/songs/songs.service';
@@ -11,11 +12,38 @@ export class ArtistService {
   constructor(
     private prismaService: PrismaService,
     @Inject(forwardRef(() => SongsService)) private songsService: SongsService,
+    private authService: AuthService,
   ) {}
 
-  async getArtistById(id: string): Promise<Prisma.ArtistCreateInput | null> {
+  async getArtistById(
+    id: string,
+  ): Promise<Partial<Prisma.ArtistCreateInput> | null> {
     return await this.prismaService.artist.findUnique({
       where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true,
+        biography: true,
+      },
+    });
+  }
+
+  async getArtistByEmail(
+    email: string,
+  ): Promise<Partial<Prisma.ArtistCreateInput> | null> {
+    return await this.prismaService.artist.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true,
+        biography: true,
+      },
     });
   }
 
@@ -23,7 +51,7 @@ export class ArtistService {
     pageNumber: number,
     pageSize: number,
   ): Promise<{
-    data: Prisma.ArtistCreateInput[];
+    data: Partial<Prisma.ArtistCreateInput>[];
     count: number;
     total: number;
   }> {
@@ -31,6 +59,25 @@ export class ArtistService {
     const artists = await this.prismaService.artist.findMany({
       skip,
       take: pageSize,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true,
+        biography: true,
+        // songs: {
+        //   select: {
+        //     id: true,
+        //     title: true,
+        //     createdAt: true,
+        //     updatedAt: true,
+        //     lyrics: true,
+        //     releaseDate: true,
+        //     duration: true,
+        //   },
+        // },
+      },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -45,6 +92,7 @@ export class ArtistService {
     artist: ArtistDto,
   ): Promise<{ newArtist: Prisma.ArtistCreateInput; message: string[] }> {
     let newArtist: Prisma.ArtistCreateInput;
+    artist.password = await this.authService.hashPassword(artist.password);
     const message: string[] = [];
     if (artist.songs && artist.songs?.length) {
       const verificationData = await this.verifyExistingSongs(artist.songs);
@@ -66,7 +114,6 @@ export class ArtistService {
         },
       });
     }
-
     return { newArtist, message };
   }
 

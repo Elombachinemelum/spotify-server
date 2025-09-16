@@ -106,7 +106,7 @@ export class SongsService {
 
     await Promise.all(
       artistList.map(async (artistId) => {
-        let artist: Prisma.ArtistCreateInput | null = null;
+        let artist: Partial<Prisma.ArtistCreateInput> | null = null;
         try {
           artist = await this.artistService.getArtistById(artistId);
         } catch (error) {

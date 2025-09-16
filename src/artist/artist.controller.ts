@@ -1,5 +1,7 @@
 import {
   Body,
+  ClassSerializerInterceptor,
+  ConflictException,
   Controller,
   DefaultValuePipe,
   Get,
@@ -10,26 +12,49 @@ import {
   Patch,
   Post,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ArtistService } from './artist.service';
-import { Prisma } from '@prisma/client';
 import { errorMessages } from 'src/utils/constants';
 import { constructNotFoundMessage } from 'src/utils/functions';
-import { ArtistDto, UpdateArtistDto } from 'src/DTOs/artist/artist.dto';
+import {
+  ArtistDto,
+  SerializedArtist,
+  UpdateArtistDto,
+} from 'src/DTOs/artist/artist.dto';
+import { PartialArtist } from 'src/types';
 
 @Controller('artist')
+@UseInterceptors(ClassSerializerInterceptor)
 export class ArtistController {
   constructor(private artistService: ArtistService) {}
 
   @Post()
   async createArtist(
     @Body() newArtist: ArtistDto,
-  ): Promise<{ artist: Prisma.ArtistCreateInput; message: string[] }> {
-    let artist: Prisma.ArtistCreateInput;
+  ): Promise<{ artist: PartialArtist; message: string[] }> {
+    let artist: PartialArtist;
+    let existingArtist: PartialArtist | null;
     let message: string[] = [];
     try {
+      existingArtist = await this.artistService.getArtistByEmail(
+        newArtist.email,
+      );
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        errorMessages.SOMETHING_WENT_WRONG,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    if (existingArtist)
+      throw new ConflictException(
+        `Artist with the email ${existingArtist.email} already exists`,
+      );
+
+    try {
       const artistData = await this.artistService.createArtist(newArtist);
-      artist = artistData.newArtist;
+      artist = new SerializedArtist(artistData.newArtist);
       message = artistData.message;
     } catch (err) {
       console.log(err);
@@ -47,12 +72,12 @@ export class ArtistController {
     pageNumber: number,
     @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize: number,
   ): Promise<{
-    data: Prisma.ArtistCreateInput[];
+    data: PartialArtist[];
     count: number;
     total: number;
   }> {
     let artist: {
-      data: Prisma.ArtistCreateInput[];
+      data: PartialArtist[];
       count: number;
       total: number;
     };
@@ -76,8 +101,8 @@ export class ArtistController {
   }
 
   @Get(':id')
-  async getArtist(@Param('id') id: string) {
-    let artist: Prisma.ArtistCreateInput | Prisma.ArtistCreateInput[] | null;
+  async getArtist(@Param('id') id: string): Promise<PartialArtist> {
+    let artist: PartialArtist | null;
     try {
       artist = await this.artistService.getArtistById(id);
     } catch (err) {
@@ -102,11 +127,11 @@ export class ArtistController {
     @Body() artist: UpdateArtistDto,
     @Param('id') id: string,
   ): Promise<{
-    artist: Prisma.ArtistCreateInput;
+    artist: PartialArtist;
     message: string[];
   }> {
-    let updatedArtist: Prisma.ArtistCreateInput;
-    let existingArtist: Prisma.ArtistCreateInput | null;
+    let updatedArtist: PartialArtist;
+    let existingArtist: PartialArtist | null;
     let message: string[] = [];
 
     try {
@@ -127,7 +152,7 @@ export class ArtistController {
 
     try {
       const artistData = await this.artistService.updateArtist(id, artist);
-      updatedArtist = artistData.artist;
+      updatedArtist = new SerializedArtist(artistData.artist);
       message = artistData.message;
     } catch (err) {
       console.log(err);
