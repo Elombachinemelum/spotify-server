@@ -44,7 +44,6 @@ model PlayList {
   songs       Song[]
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  password    String   @default("")
 }
 
 model Artist {
@@ -54,4 +53,6 @@ model Artist {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   songs     Song[]
+  email     String   @unique
+  password  String
 }
