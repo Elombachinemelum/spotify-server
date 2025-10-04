@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
+  constructor(private jwtService: JwtService) {}
+
   async hashPassword(password: string): Promise<string> {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -15,5 +18,13 @@ export class AuthService {
   ): Promise<boolean> {
     const isMatch = await bcrypt.compare(password, hashedPassword);
     return isMatch;
+  }
+
+  async generateJWT(payload: {
+    sub: string;
+    username: string;
+  }): Promise<string> {
+    console.log(payload);
+    return this.jwtService.signAsync(payload);
   }
 }

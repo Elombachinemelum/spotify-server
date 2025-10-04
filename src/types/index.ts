@@ -31,3 +31,10 @@ export interface Playlist {
 }
 
 export type PartialArtist = Partial<Prisma.ArtistCreateInput>;
+
+export interface JwtValue {
+  sub: string;
+  username: string;
+  iat: number;
+  exp: number;
+}

@@ -34,20 +34,21 @@ export class AuthController {
       );
     }
     if (!user) throw new UnauthorizedException('Invalid Credentials');
-    try {
-      isValidCredential = await this.authService.comparePasswords(
-        loginData.password,
-        user.password,
-      );
-    } catch (err) {
-      console.error(err);
-      throw new InternalServerErrorException(
-        'Something went wrong, please try again.',
-      );
-    }
+
+    isValidCredential = await this.authService.comparePasswords(
+      loginData.password,
+      user.password,
+    );
 
     if (!isValidCredential)
       throw new UnauthorizedException('Invalid Credentials');
-    return new SerializedUser(user);
+
+    const jwt = await this.authService.generateJWT({
+      sub: user.id as string,
+      username: user.email,
+    });
+    const serializedUSer = new SerializedUser(user);
+    serializedUSer.token = jwt;
+    return serializedUSer;
   }
 }
