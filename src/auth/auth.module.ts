@@ -7,7 +7,6 @@ import { AuthGuard } from './auth.guard';
 
 @Module({
   providers: [AuthService, AuthGuard],
-  exports: [AuthService],
   controllers: [AuthController],
   imports: [
     forwardRef(() => UserModule),
