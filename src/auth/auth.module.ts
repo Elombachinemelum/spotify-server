@@ -6,8 +6,16 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthGuard } from './auth.guard';
 
 @Module({
-  providers: [AuthService, AuthGuard],
+  providers: [
+    AuthService,
+    {
+      // makes the AuthGuard global. Nest will bind it to every route handler
+      provide: 'APP_GUARD',
+      useClass: AuthGuard,
+    },
+  ],
   controllers: [AuthController],
+  exports: [AuthService],
   imports: [
     forwardRef(() => UserModule),
     JwtModule.register({

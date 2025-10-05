@@ -24,7 +24,6 @@ export class AuthService {
     sub: string;
     username: string;
   }): Promise<string> {
-    console.log(payload);
     return this.jwtService.signAsync(payload);
   }
 }

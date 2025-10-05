@@ -1,3 +1,5 @@
+import { SetMetadata } from '@nestjs/common';
+
 export const errorMessages = {
   SOMETHING_WENT_WRONG: 'Something went wrong, please try again.',
   SONGS_NOT_ADDED_TO_ARTIST:
@@ -16,4 +18,8 @@ export const errorMessages = {
     'The following songs were not added to this playlist, ensure they are valid:',
   SONG_NOT_REMOVED_FROM_PLAYLIST:
     'The following songs were not removed from the playlist, ensure they are valid:',
+  UNAUTHORIZED: 'Invalid Access Token',
 };
+
+export const Is_Public_Route = 'isPublicRoute';
+export const Public = () => SetMetadata(Is_Public_Route, true); // custom decorator to mark route handlers as public(no auth needed)

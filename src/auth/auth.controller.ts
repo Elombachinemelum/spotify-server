@@ -12,6 +12,7 @@ import { LoginDTO } from 'src/DTOs/auth/auth.dto';
 import { UserService } from 'src/user/user.service';
 import { AuthService } from './auth.service';
 import { SerializedUser } from 'src/DTOs/user/user.dto';
+import { Public } from 'src/utils/constants';
 
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -22,6 +23,7 @@ export class AuthController {
   ) {}
 
   @Post()
+  @Public()
   async login(@Body() loginData: LoginDTO): Promise<SerializedUser> {
     let user: Prisma.UserCreateInput | null;
     let isValidCredential: boolean = false;

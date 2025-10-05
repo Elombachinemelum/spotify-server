@@ -7,7 +7,6 @@ import {
   HttpStatus,
   Param,
   Post,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { CreateUserDto, SerializedUser } from 'src/DTOs/user/user.dto';
@@ -16,11 +15,9 @@ import { Prisma } from '@prisma/client';
 import { FullUser } from 'src/types';
 import { errorMessages } from 'src/utils/constants';
 import { constructNotFoundMessage } from 'src/utils/functions';
-import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('user')
 @UseInterceptors(ClassSerializerInterceptor)
-@UseGuards(AuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
