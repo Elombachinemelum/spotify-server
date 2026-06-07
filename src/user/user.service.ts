@@ -1,15 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { AuthService } from 'src/auth/auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FullUser } from 'src/types';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly authService: AuthService,
+  ) {}
 
   async createUser(
     newUser: Prisma.UserCreateInput,
   ): Promise<Prisma.UserCreateInput> {
+    newUser.password = await this.authService.hashPassword(newUser.password);
     return await this.prismaService.user.create({ data: newUser });
   }
 
@@ -37,7 +42,7 @@ export class UserService {
             songs: {
               select: {
                 id: true,
-                name: true,
+                title: true,
                 createdAt: true,
                 artists: { select: { name: true } },
               },

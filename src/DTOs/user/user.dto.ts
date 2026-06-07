@@ -25,6 +25,8 @@ export class SerializedUser {
   @Exclude()
   updatedAt: string | Date | null;
 
+  token: string;
+
   constructor(partialUser: Partial<SerializedUser>) {
     Object.assign(this, partialUser);
   }

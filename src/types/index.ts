@@ -1,3 +1,5 @@
+import { Prisma } from '.prisma/client/default';
+
 export interface FullUser {
   name: string;
   email: string;
@@ -9,7 +11,7 @@ export interface FullUser {
     updatedAt: Date;
     description: string | null;
     songs: {
-      name: string;
+      title: string;
       id: string;
       createdAt: Date;
       artists: {
@@ -26,4 +28,13 @@ export interface Playlist {
   createdAt: Date;
   updatedAt: Date;
   userId: string;
+}
+
+export type PartialArtist = Partial<Prisma.ArtistCreateInput>;
+
+export interface JwtValue {
+  sub: string;
+  username: string;
+  iat: number;
+  exp: number;
 }

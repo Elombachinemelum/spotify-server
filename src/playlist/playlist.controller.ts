@@ -1,17 +1,24 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Get,
   HttpException,
   HttpStatus,
   Param,
+  ParseIntPipe,
+  Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { PlaylistService } from './playlist.service';
 import { errorMessages } from 'src/utils/constants';
 import { constructNotFoundMessage } from 'src/utils/functions';
 import { Playlist } from 'src/types';
-import { CreatPlayListDto } from 'src/DTOs/playlist/playlist.dto';
+import {
+  CreatPlayListDto,
+  UpdatePlaylistDto,
+} from 'src/DTOs/playlist/playlist.dto';
 import { Prisma } from '@prisma/client';
 import { UserService } from 'src/user/user.service';
 
@@ -24,7 +31,10 @@ export class PlaylistController {
 
   @Post()
   async createPlaylist(@Body() playList: CreatPlayListDto) {
-    let newPlayList: Playlist;
+    let newPlayList: {
+      playlist: CreatPlayListDto;
+      message: string[];
+    };
     let playlistOwner: Prisma.UserCreateInput | null;
 
     try {
@@ -56,11 +66,16 @@ export class PlaylistController {
     return newPlayList;
   }
 
+  // this is how to provide default value to query params
   @Get()
-  async getPlaylists(): Promise<Playlist[]> {
-    let playLists: Playlist[];
+  async getPlaylists(
+    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize: number,
+    @Query('pageNumber', new DefaultValuePipe(1), ParseIntPipe)
+    pageNumber: number,
+  ): Promise<{ data: Playlist[]; total: number; count: number }> {
+    let playLists: { data: Playlist[]; total: number; count: number };
     try {
-      playLists = await this.playListService.getPlaylists();
+      playLists = await this.playListService.getPlaylists(pageNumber, pageSize);
     } catch (err) {
       console.log(err);
       throw new HttpException(
@@ -68,6 +83,7 @@ export class PlaylistController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+    console.log(playLists);
     return playLists;
   }
 
@@ -89,5 +105,47 @@ export class PlaylistController {
       constructNotFoundMessage('Playlist'),
       HttpStatus.NOT_FOUND,
     );
+  }
+
+  @Patch(':id')
+  async updatePlaylist(
+    @Body() playlist: UpdatePlaylistDto,
+    @Param('id') id: string,
+  ): Promise<{
+    playlist: Playlist;
+    message: string[];
+  }> {
+    let exsitingPlaylist: Playlist | null;
+    let updatedPlaylistData: { playlist: Playlist; message: string[] };
+    try {
+      exsitingPlaylist = await this.playListService.getPlaylistById(id);
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        errorMessages.SOMETHING_WENT_WRONG,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    if (!exsitingPlaylist)
+      throw new HttpException(
+        constructNotFoundMessage('Playlist'),
+        HttpStatus.NOT_FOUND,
+      );
+
+    try {
+      updatedPlaylistData = await this.playListService.updatePlaylist(
+        id,
+        playlist,
+      );
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        errorMessages.SOMETHING_WENT_WRONG,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return updatedPlaylistData;
   }
 }
