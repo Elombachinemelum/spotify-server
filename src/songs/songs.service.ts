@@ -157,8 +157,8 @@ export class SongsService {
         data.playlists ||
         data.removeArtists ||
         data.removePlaylists) &&
-      (data.artists?.length ||
-        data.playlists?.length ||
+      ((data.artists as string[])?.length ||
+        (data.playlists as string[])?.length ||
         data.removeArtists?.length ||
         data.removePlaylists?.length)
     ) {
